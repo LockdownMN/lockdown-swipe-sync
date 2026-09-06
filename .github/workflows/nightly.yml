@@ -1,0 +1,36 @@
+name: Swipe day-closing sync
+
+on:
+  schedule:
+    # 02:30 UTC = 08:00 IST — "yesterday" is fully closed by then.
+    - cron: "30 2 * * *"
+  workflow_dispatch:            # manual run button, with optional backfill
+    inputs:
+      sync_from:
+        description: "Backfill from (YYYY-MM-DD, optional)"
+        required: false
+      sync_to:
+        description: "Backfill to (YYYY-MM-DD, optional)"
+        required: false
+      sync_days:
+        description: "Or: last N days (optional)"
+        required: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm test
+      - name: Pull Swipe day closing
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SYNC_FROM: ${{ github.event.inputs.sync_from }}
+          SYNC_TO: ${{ github.event.inputs.sync_to }}
+          SYNC_DAYS: ${{ github.event.inputs.sync_days }}
+        run: npm run sync

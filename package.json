@@ -1,0 +1,14 @@
+{
+  "name": "lockdown-swipe-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Nightly Swipe day-closing pull for the Lockdown Command Centre (GitHub Actions, no Blaze).",
+  "scripts": {
+    "sync": "node sync.mjs",
+    "test": "node swipe.test.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}
