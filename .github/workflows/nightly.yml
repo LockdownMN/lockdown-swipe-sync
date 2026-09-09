@@ -20,6 +20,8 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write            # for the heartbeat commit below
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,3 +36,15 @@ jobs:
           SYNC_TO: ${{ github.event.inputs.sync_to }}
           SYNC_DAYS: ${{ github.event.inputs.sync_days }}
         run: npm run sync
+
+      # GitHub auto-disables a scheduled workflow after 60 days with no repo
+      # commits. This job runs daily, so a daily timestamp commit keeps it alive.
+      - name: Heartbeat commit
+        if: always()
+        run: |
+          date -u +%FT%TZ > last-run.txt
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add last-run.txt
+          git commit -m "heartbeat $(cat last-run.txt)" || exit 0
+          git push
